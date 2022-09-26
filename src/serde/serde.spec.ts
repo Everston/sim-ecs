@@ -54,3 +54,11 @@ export interface ISerDe {
 
 
 export const CTagMarker = '#Tags';
+
+export const SERDE_ENTITY_DATA_PSUEDO_COMPONENT_KEY = '$entity-data';
+
+export interface ISerDeEntityData {
+    id: string;
+};
+
+

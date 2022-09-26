@@ -93,4 +93,32 @@ describe('Test SerDe', () => {
 
         compare(entity1, doSerDe(entity1));
     });
+
+    it('ANY HANDLERS: serialize entity data into pseudo component', () => {
+        const testUuid = 'ebaff5c3-dd86-43fa-93ba-4e55bb1585b6';
+        const entity1 = new Entity(testUuid);
+
+        const serializedString = serde.serialize({entities: [entity1].values()}, options).toJSON();
+
+        const expectedData = [{
+            '$entity-data': {
+                id: testUuid
+            }
+        }];
+
+        expect(serializedString).eq(JSON.stringify(expectedData));
+    })
+
+    it('ANY HANDLERS: deserialize entity without psuedo component should not throw', () => {
+        const entity1 = serde.deserialize(SerialFormat.fromJSON(JSON.stringify([{}])), options).entities.next().value;
+        expect(entity1 instanceof Entity).eq(true);
+    })
+
+    it('ANY HANDLERS: serialize -> deserialize entity id', () => {
+        const testUuid = 'ebaff5c3-dd86-43fa-93ba-4e55bb1585b6';
+        const entity1 = new Entity(testUuid);
+        const serDeEntity = doSerDe(entity1);
+
+        expect(serDeEntity.id).eq(testUuid);
+    });
 });

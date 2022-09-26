@@ -3,7 +3,9 @@ import {
     CTagMarker,
     ISerDe,
     ISerDeDataSet,
+    ISerDeEntityData,
     ISerDeOperations,
+    SERDE_ENTITY_DATA_PSUEDO_COMPONENT_KEY,
     TCustomDeserializer,
     TDeserializer,
     TSerDeOptions,
@@ -35,7 +37,15 @@ export class SerDe implements ISerDe {
         let tag: TTag;
 
         for (serialEntity of data) {
-            entity = new Entity();
+            const serDeEntityData = serialEntity[SERDE_ENTITY_DATA_PSUEDO_COMPONENT_KEY] as ISerDeEntityData | undefined;
+
+            if (serDeEntityData && serDeEntityData.id) {
+                entity = new Entity(serDeEntityData.id);
+            } else {
+                entity = new Entity();
+            }
+
+            delete serialEntity[SERDE_ENTITY_DATA_PSUEDO_COMPONENT_KEY];
 
             for ([serialComponentName, serialComponentData] of Object.entries(serialEntity)) {
                 if (finalOptions.useRegisteredHandlers && this.typeHandlers.has(serialComponentName)) {
@@ -95,6 +105,14 @@ export class SerDe implements ISerDe {
 
         for (entity of data.entities) {
             serialEntity = {};
+
+            if (entity.hasId()) {
+                const serDeEntityData:ISerDeEntityData = {
+                    id: entity.id
+                };
+
+                serialEntity[SERDE_ENTITY_DATA_PSUEDO_COMPONENT_KEY] = serDeEntityData;
+            }
 
             for (component of entity.getComponents()) {
                 if (finalOptions.useRegisteredHandlers && this.typeHandlers.has(component.constructor.name)) {
